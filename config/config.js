@@ -1,0 +1,29 @@
+module.exports = {
+  development: {
+    use_env_variable: 'DATABASE_URL',
+    protocol: 'postgres',
+    dialect: 'postgres',
+    ssl: true,
+    dialectOptions: {
+      ssl: true,
+    },
+  },
+  test: {
+    use_env_variable: 'DATABASE_URL',
+    protocol: 'postgres',
+    dialect: 'postgres',
+    ssl: true,
+    dialectOptions: {
+      ssl: true,
+    },
+  },
+  production: {
+    use_env_variable: 'DATABASE_URL',
+    protocol: 'postgres',
+    dialect: 'postgres',
+    ssl: true,
+    dialectOptions: {
+      ssl: true,
+    },
+  },
+}
