@@ -8,11 +8,17 @@ exports.postIssue = ({ params, body, db }, res) => {
       name,
     },
   })
-    .then(project => {
-      project
-        .setIssue(Issue.create(body))
+    .then(([project]) => {
+      Issue.create(body)
         .then(issue => {
-          res.json(issue)
+          project
+            .addIssue(issue)
+            .then(() => {
+              res.status(201).json({ id: issue.id, ...body })
+            })
+            .catch(err => {
+              res.status(400).json(err)
+            })
         })
         .catch(err => {
           res.status(400).json(err)
@@ -23,7 +29,7 @@ exports.postIssue = ({ params, body, db }, res) => {
     })
 }
 
-exports.getIssues = ({ params, db }, res) => {
+exports.getIssues = ({ params, db, query }, res) => {
   const Project = db.import('../models/project.js')
   const { projectName: name } = params
 
@@ -34,7 +40,13 @@ exports.getIssues = ({ params, db }, res) => {
   })
     .then(project => {
       project
-        .getIssues()
+        .getIssues({
+          where: Object.entries(query).map(([name, value]) => {
+            return {
+              [name]: value,
+            }
+          }),
+        })
         .then(issues => {
           res.json(issues)
         })
@@ -47,10 +59,43 @@ exports.getIssues = ({ params, db }, res) => {
     })
 }
 
-exports.deleteIssue = (req, res) => {
-  res.sendStatus(200)
+exports.deleteIssue = ({ body, db }, res) => {
+  const Issue = db.import('../models/issue.js')
+
+  Issue.destroy({
+    where: {
+      id: body._id,
+    },
+  })
+    .then(() => {
+      res.sendStatus(200)
+    })
+    .catch(err => {
+      res.json(err)
+    })
 }
 
-exports.updateIssue = (req, res) => {
-  res.sendStatus(200)
+exports.updateIssue = ({ body, db }, res) => {
+  const Issue = db.import('../models/issue.js')
+
+  Issue.findOne({
+    where: {
+      id: body._id,
+    },
+  })
+    .then(issue => {
+      delete body._id
+
+      issue
+        .update(body)
+        .then(issue => {
+          res.json(issue)
+        })
+        .catch(err => {
+          res.json(err)
+        })
+    })
+    .catch(() => {
+      res.sendStatus(404)
+    })
 }
